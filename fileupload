@@ -1,0 +1,61 @@
+# read library for AWS 
+import boto3
+# read library for ini file
+import configparser
+# read library for appear result of image
+from matplotlib import pyplot as plt
+from PIL import Image
+import random
+# read library for using camera of rasberry pi
+import time
+import picamera
+
+# take a picture by rasberry pi camera after 2 secounds
+#with picamera.PiCamera() as camera:
+ #camera.resolution = (640, 480)
+ #camera.start_preview()
+ #time.sleep(0.2)
+ #DATE = datetime.datetime.now()
+ #camera.capture_file("DATE.jpg")
+ #os.rename("DATE.jpg","{0:%Y%m%d_%H%M%S}.jpg".format(DATE))
+ 
+# make instance of configparser
+ini = configparser.ConfigParser()
+# read ini file what already make
+ini.read("/home/gomi/config.ini","UTF-8")
+
+# desagnate file wants to recognize
+filename = '/home/gomi/Desktop/test.jpg'
+
+# open the image and get size of image
+img = Image.open('/home/gomi/Desktop/test.jpg')
+img_width = img.size[0]
+img_height = img.size[1]
+
+# desagnate bucket to use
+bucket = "imagestock"
+# desagnate region to use
+region = "ap-northeast-2"
+
+# read inside of ini file to use service
+access_key = ini["AWS_KEY"]["awsaccesskeyid"]
+secret_key = ini["AWS_KEY"]["awssecretkey"]
+print(access_key)
+print(secret_key)
+# get connect information about service
+session = boto3.Session(
+    aws_access_key_id=access_key, aws_secret_access_key = secret_key,region_name=region
+)
+
+# connect to S3 service
+s3 = session.client("s3")
+print('c')
+
+# read file 
+with open(filename, "rb") as f:
+    # upload file what was read to S3 service
+    s3.put_object(Bucket=bucket, Key=filename, Body=f)
+    print('d')
+    
+# delete the file uploaded to S3 service
+s3.delete_object(Bucket=bucket, Key=filename) 
